@@ -1,0 +1,1 @@
+# strukture2025
