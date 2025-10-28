@@ -1,20 +1,4 @@
-/*2. Definirati strukturu osoba(ime, prezime, godina roenja) i napisati program koji :
-A.dinamiËki dodaje novi element na poËetak liste,
-B.ispisuje listu,
-C.dinamiËki dodaje novi element na kraj liste,
-D.pronalazi element u listi(po prezimenu),
-E.briöe odreeni element iz liste,
-U zadatku se ne smiju koristiti globalne varijable.
-
-3. Prethodnom zadatku dodati funkcije :
-A.dinamiËki dodaje novi element iza odreenog elementa,
-B.dinamiËki dodaje novi element ispred odreenog elementa,
-C.sortira listu po prezimenima osoba,
-D.upisuje listu u datoteku,
-E.Ëita listu iz datoteke.
-Samo nadogradit prosli zadatak
-*/
-#define _CRT_SECURE_NO_WARNINGS
+Ôªø#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,29 +21,45 @@ Person* addBefore(Person* head, Person* target);
 Person* sortList(Person* head);
 int writeToFile(Person* head, const char* filename);
 Person* readFromFile(const char* filename);
+void freeList(Person* head);
 
 // --- Funkcije ---
 Person* createPerson() {
     Person* newPerson = (Person*)malloc(sizeof(Person));
     if (!newPerson) {
-        perror("Allocation error");
-        exit(1);
+        perror("Gre≈°ka: neuspjela alokacija memorije");
+        return NULL;
     }
 
     printf("Unesite ime: ");
-    scanf_s("%s", newPerson->ime, (unsigned)_countof(newPerson->ime));
+    if (scanf_s("%s", newPerson->ime, (unsigned)_countof(newPerson->ime)) != 1) {
+        printf("Neispravan unos.\n");
+        free(newPerson);
+        return NULL;
+    }
+
     printf("Unesite prezime: ");
-    scanf_s("%s", newPerson->prezime, (unsigned)_countof(newPerson->prezime));
-    printf("Unesite godinu roenja: ");
-    scanf_s("%d", &newPerson->godina);
+    if (scanf_s("%s", newPerson->prezime, (unsigned)_countof(newPerson->prezime)) != 1) {
+        printf("Neispravan unos.\n");
+        free(newPerson);
+        return NULL;
+    }
+
+    printf("Unesite godinu roƒëenja: ");
+    if (scanf_s("%d", &newPerson->godina) != 1) {
+        printf("Neispravan unos.\n");
+        free(newPerson);
+        return NULL;
+    }
 
     newPerson->next = NULL;
     return newPerson;
 }
 
-// A. Dodaj na poËetak
+// A. Dodaj na poƒçetak
 Person* addToBeginning(Person* head) {
     Person* newPerson = createPerson();
+    if (!newPerson) return head;
     newPerson->next = head;
     return newPerson;
 }
@@ -67,6 +67,8 @@ Person* addToBeginning(Person* head) {
 // C. Dodaj na kraj
 Person* addToEnd(Person* head) {
     Person* newPerson = createPerson();
+    if (!newPerson) return head;
+
     if (head == NULL)
         return newPerson;
 
@@ -83,7 +85,7 @@ int printList(Person* head) {
     int index = 0;
     if (!head) {
         printf("Lista je prazna.\n");
-        return;
+        return 0;
     }
 
     while (head != NULL) {
@@ -93,7 +95,7 @@ int printList(Person* head) {
     return 0;
 }
 
-// D. Pronalaûenje po prezimenu
+// D. Pronala≈æenje po prezimenu
 Person* findBySurname(Person* head, const char* prezime) {
     while (head != NULL) {
         if (strcmp(head->prezime, prezime) == 0)
@@ -114,7 +116,7 @@ Person* deleteBySurname(Person* head, const char* prezime) {
     }
 
     if (current == NULL) {
-        printf("Osoba s prezimenom '%s' nije pronaena.\n", prezime);
+        printf("Osoba s prezimenom '%s' nije pronaƒëena.\n", prezime);
         return head;
     }
 
@@ -128,26 +130,29 @@ Person* deleteBySurname(Person* head, const char* prezime) {
     return head;
 }
 
-// 3A. Dodaj iza odreenog elementa
+// 3A. Dodaj iza odreƒëenog elementa
 Person* addAfter(Person* head, Person* target) {
     if (target == NULL) {
-        printf("NevaûeÊi element.\n");
+        printf("Neva≈æeƒái element.\n");
         return head;
     }
 
     Person* newPerson = createPerson();
+    if (!newPerson) return head;
+
     newPerson->next = target->next;
     target->next = newPerson;
     return head;
 }
 
-// 3B. Dodaj ispred odreenog elementa
+// 3B. Dodaj ispred odreƒëenog elementa
 Person* addBefore(Person* head, Person* target) {
     if (target == NULL)
         return addToBeginning(head);
 
     if (head == target) {
         Person* newPerson = createPerson();
+        if (!newPerson) return head;
         newPerson->next = head;
         return newPerson;
     }
@@ -157,11 +162,13 @@ Person* addBefore(Person* head, Person* target) {
         current = current->next;
 
     if (current == NULL) {
-        printf("Element nije pronaen.\n");
+        printf("Element nije pronaƒëen.\n");
         return head;
     }
 
     Person* newPerson = createPerson();
+    if (!newPerson) return head;
+
     newPerson->next = target;
     current->next = newPerson;
     return head;
@@ -201,8 +208,8 @@ int writeToFile(Person* head, const char* filename) {
     FILE* fp;
     fopen_s(&fp, filename, "w");
     if (!fp) {
-        perror("Greöka pri otvaranju datoteke");
-        return;
+        perror("Gre≈°ka pri otvaranju datoteke");
+        return 1;
     }
 
     while (head != NULL) {
@@ -212,16 +219,15 @@ int writeToFile(Person* head, const char* filename) {
 
     fclose(fp);
     printf("Lista je upisana u datoteku '%s'.\n", filename);
-
     return 0;
 }
 
-// 3E. »itanje iz datoteke
+// 3E. ƒåitanje iz datoteke
 Person* readFromFile(const char* filename) {
     FILE* fp;
     fopen_s(&fp, filename, "r");
     if (!fp) {
-        perror("Greöka pri otvaranju datoteke");
+        perror("Gre≈°ka pri otvaranju datoteke");
         return NULL;
     }
 
@@ -229,8 +235,16 @@ Person* readFromFile(const char* filename) {
     Person* tail = NULL;
     Person temp;
 
-    while (fscanf_s(fp, "%s %s %d", temp.ime, (unsigned)_countof(temp.ime), temp.prezime, (unsigned)_countof(temp.prezime), &temp.godina) == 3) {
+    while (fscanf_s(fp, "%s %s %d", temp.ime, (unsigned)_countof(temp.ime),
+        temp.prezime, (unsigned)_countof(temp.prezime), &temp.godina) == 3) {
         Person* newPerson = (Person*)malloc(sizeof(Person));
+        if (!newPerson) {
+            perror("Gre≈°ka pri alokaciji memorije");
+            freeList(head);
+            fclose(fp);
+            return NULL;
+        }
+
         strcpy(newPerson->ime, temp.ime);
         strcpy(newPerson->prezime, temp.prezime);
         newPerson->godina = temp.godina;
@@ -245,8 +259,19 @@ Person* readFromFile(const char* filename) {
     }
 
     fclose(fp);
-    printf("Lista je uËitana iz datoteke '%s'.\n", filename);
+    printf("Lista je uƒçitana iz datoteke '%s'.\n", filename);
     return head;
+}
+
+// ‚úÖ Oslobaƒëanje memorije
+void freeList(Person* head) {
+    Person* temp = NULL;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+    printf("Sva memorija je osloboƒëena.\n");
 }
 
 // --- MAIN ---
@@ -256,21 +281,22 @@ int main() {
 
     while (1) {
         printf("\nIzbornik:\n");
-        printf("1. Dodaj osobu na poËetak\n");
-        printf("2. Ispiöi listu\n");
+        printf("1. Dodaj osobu na poƒçetak\n");
+        printf("2. Ispi≈°i listu\n");
         printf("3. Dodaj osobu na kraj\n");
-        printf("4. Dodaj osobu iza odreenog elementa (po indeksu)\n");
-        printf("5. Dodaj osobu ispred odreenog elementa (po indeksu)\n");
+        printf("4. Dodaj osobu iza odreƒëenog elementa (po indeksu)\n");
+        printf("5. Dodaj osobu ispred odreƒëenog elementa (po indeksu)\n");
         printf("6. Sortiraj po prezimenima\n");
         printf("7. Upis u datoteku\n");
-        printf("8. UËitaj iz datoteke\n");
-        printf("9. Obriöi po prezimenu\n");
+        printf("8. Uƒçitaj iz datoteke\n");
+        printf("9. Obri≈°i po prezimenu\n");
         printf("10. Izlaz\n");
         printf("Odabir: ");
 
         if (scanf_s("%d", &choice) != 1) {
-            perror("Greöka unosa");
-            exit(1);
+            printf("Neispravan unos. Poku≈°ajte ponovno.\n");
+            while (getchar() != '\n'); // oƒçisti ulazni buffer
+            continue;
         }
 
         switch (choice) {
@@ -286,7 +312,11 @@ int main() {
         case 4: {
             int idx;
             printf("Unesite indeks: ");
-            scanf_s("%d", &idx);
+            if (scanf_s("%d", &idx) != 1) {
+                printf("Neispravan unos indeksa.\n");
+                while (getchar() != '\n');
+                break;
+            }
             Person* current = head;
             for (int i = 0; i < idx && current != NULL; i++)
                 current = current->next;
@@ -296,7 +326,11 @@ int main() {
         case 5: {
             int idx;
             printf("Unesite indeks: ");
-            scanf_s("%d", &idx);
+            if (scanf_s("%d", &idx) != 1) {
+                printf("Neispravan unos indeksa.\n");
+                while (getchar() != '\n');
+                break;
+            }
             if (idx == 0)
                 head = addBefore(head, head);
             else {
@@ -323,12 +357,7 @@ int main() {
             char filename[100];
             printf("Unesite ime datoteke: ");
             scanf_s("%s", filename, (unsigned)_countof(filename));
-            // Oslobaanje stare liste
-            while (head) {
-                Person* tmp = head;
-                head = head->next;
-                free(tmp);
-            }
+            freeList(head);
             head = readFromFile(filename);
             break;
         }
@@ -340,14 +369,11 @@ int main() {
             break;
         }
         case 10:
-            while (head) {
-                Person* tmp = head;
-                head = head->next;
-                free(tmp);
-            }
+            freeList(head);
+            printf("Izlaz iz programa.\n");
             return 0;
         default:
-            printf("Pogreöan odabir.\n");
+            printf("Pogre≈°an odabir.\n");
         }
     }
 }
