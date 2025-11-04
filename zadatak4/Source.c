@@ -77,6 +77,7 @@ int unosPrvi(pozicija p)
 		else
 			q->next = NULL;
 	}
+	fclose(fp);
 	return 0;
 }
 
@@ -113,7 +114,8 @@ int unosDrugi(pozicija p)
 		else
 			q->next = NULL;
 	}
-	return 0;
+
+	fclose(fp);
 	return 0;
 }
 
